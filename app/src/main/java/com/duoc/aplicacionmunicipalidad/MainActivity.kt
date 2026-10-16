@@ -1,47 +1,35 @@
 package com.duoc.aplicacionmunicipalidad
 
+import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme
+
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme // <- Importación del tema
+import com.duoc.aplicacionmunicipalidad.view.LoginScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AplicacionMuniSanJoaquinTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+            // Reemplazamos el nombre de ejemplo por el tema real de tu app
+            AplicacionMuniSanJoaquinTheme() {
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    LoginScreen(
+                        onLoginSuccess = { perfil ->
+                            // Cuando el login sea exitoso, esto se imprimirá en el Logcat de Android Studio
+                            println("¡Login exitoso! Bienvenido perfil: $perfil")
+
+                            // Aquí más adelante agregaremos la navegación hacia la pantalla del Feed
+                        }
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    AplicacionMuniSanJoaquinTheme {
-        Greeting("Android")
     }
 }
