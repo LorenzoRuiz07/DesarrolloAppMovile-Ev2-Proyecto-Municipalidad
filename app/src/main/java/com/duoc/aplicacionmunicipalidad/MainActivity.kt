@@ -10,13 +10,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme // <- Importación del tema
+import com.duoc.aplicacionmunicipalidad.view.BasicoTheme
+import com.duoc.aplicacionmunicipalidad.view.HomeScreen
 import com.duoc.aplicacionmunicipalidad.view.LoginScreen
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            BasicoTheme {
+                HomeScreen()
+            }
             // Reemplazamos el nombre de ejemplo por el tema real de tu app
             AplicacionMuniSanJoaquinTheme() {
                 Surface(color = MaterialTheme.colorScheme.background) {
