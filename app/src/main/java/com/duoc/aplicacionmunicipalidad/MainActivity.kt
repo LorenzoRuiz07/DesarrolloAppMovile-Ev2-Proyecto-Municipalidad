@@ -1,18 +1,18 @@
 package com.duoc.aplicacionmunicipalidad
 
-import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme
-
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme // <- Importación del tema
-import com.duoc.aplicacionmunicipalidad.view.BasicoTheme
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme
 import com.duoc.aplicacionmunicipalidad.view.HomeScreen
 import com.duoc.aplicacionmunicipalidad.view.LoginScreen
+
 
 
 class MainActivity : ComponentActivity() {
@@ -20,20 +20,29 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            BasicoTheme {
-                HomeScreen()
-            }
-            // Reemplazamos el nombre de ejemplo por el tema real de tu app
-            AplicacionMuniSanJoaquinTheme() {
+            AplicacionMuniSanJoaquinTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    LoginScreen(
-                        onLoginSuccess = { perfil ->
-                            // Cuando el login sea exitoso, esto se imprimirá en el Logcat de Android Studio
-                            println("¡Login exitoso! Bienvenido perfil: $perfil")
+                    val navController = rememberNavController()
 
-                            // Aquí más adelante agregaremos la navegación hacia la pantalla del Feed
+                    NavHost(
+                        navController = navController,
+                        startDestination = "login"
+                    ) {
+                        composable("login") {
+                            LoginScreen(
+                                onLoginSuccess = { perfil ->
+                                    println("¡Login exitoso! Bienvenido perfil: $perfil")
+                                    // Navega a home y borra login del historial para no volver al presionar 'Atrás'
+                                    navController.navigate("home") {
+                                        popUpTo("login") { inclusive = true }
+                                    }
+                                }
+                            )
                         }
-                    )
+                        composable("home") {
+                            HomeScreen()
+                        }
+                    }
                 }
             }
         }
