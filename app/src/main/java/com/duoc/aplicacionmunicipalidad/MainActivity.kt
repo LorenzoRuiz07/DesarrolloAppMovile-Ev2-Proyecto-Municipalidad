@@ -47,7 +47,10 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("home") {
-                            HomeScreen()
+                            HomeScreen(onPerfilClick = { navController.navigate("perfil")
+                            }
+                            )
+
                         }
                         composable("perfil") {
                             ProfileScreen(

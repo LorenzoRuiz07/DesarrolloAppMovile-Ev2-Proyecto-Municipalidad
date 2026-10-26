@@ -80,7 +80,7 @@ import com.duoc.aplicacionmunicipalidad.ui.theme.MapaZona
 import com.duoc.aplicacionmunicipalidad.viewmodel.HomeUiState
 import com.duoc.aplicacionmunicipalidad.viewmodel.HomeViewModel
 
-// Pantalla principal "Tu comuna, al día" (conecta el ViewModel con la UI)
+//Pantalla principal "Tu comuna, al día" (conecta el ViewModel con la UI)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
@@ -99,7 +99,7 @@ fun HomeScreen(
         onPrioridadChange = viewModel::onPrioridadChange,
         onRequerimientoClick = onRequerimientoClick,
         onNotificacionesClick = onNotificacionesClick,
-        onPerfilClick = onPerfilClick,
+        onProfilClick = onPerfilClick,
     )
 }
 
@@ -113,7 +113,7 @@ fun HomeContent(
     onPrioridadChange: (String?) -> Unit,
     onRequerimientoClick: (Requerimiento) -> Unit,
     onNotificacionesClick: () -> Unit,
-    onPerfilClick: () -> Unit
+    onProfilClick: () -> Unit
 ) {
     val visibles = state.visibles
 
@@ -127,7 +127,7 @@ fun HomeContent(
     ) {
         item { Encabezado(onNotificacionesClick) }
 
-        item { TituloResidente(onPerfilClick) }
+        item { TituloResidente(onProfilClick) }
 
         item {
             Text(
@@ -153,7 +153,6 @@ fun HomeContent(
         }
 
         if (state.verMapa) {
-            // TODO: reemplazar por GoogleMaps() con marcadores de los requerimientos visibles
             item {
                 MapaReferencial(
                     modifier = Modifier
@@ -489,7 +488,7 @@ fun MapaReferencial(
             )
         }
 
-        // Etiqueta superior izquierda
+        //Etiqueta superior izquierda
         Surface(
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -505,7 +504,7 @@ fun MapaReferencial(
             )
         }
 
-        // Pin principal + nombre del lugar
+        //Pin principal + nombre del lugar
         PinMapa(
             modifier = Modifier.align(BiasAlignment(0f, -0.35f)),
             principal = true
@@ -519,11 +518,11 @@ fun MapaReferencial(
             modifier = Modifier.align(BiasAlignment(0f, 0.30f))
         )
 
-        // Pines secundarios
+        //Pines secundarios
         PinMapa(modifier = Modifier.align(BiasAlignment(-0.62f, 0.45f)))
         PinMapa(modifier = Modifier.align(BiasAlignment(0.76f, -0.25f)))
 
-        // Nombre de calle
+        //Nombre de calle
         Text(
             text = "Carmen",
             style = MaterialTheme.typography.labelSmall,
@@ -531,7 +530,7 @@ fun MapaReferencial(
             modifier = Modifier.align(BiasAlignment(0.62f, 0.72f))
         )
 
-        // Botón pantalla completa
+        //Botón pantalla completa
         Surface(
             onClick = onExpandir,
             modifier = Modifier
@@ -705,7 +704,7 @@ private fun HomeScreenPreview() {
             onPrioridadChange = {},
             onRequerimientoClick = {},
             onNotificacionesClick = {},
-            onPerfilClick = {}
+            onProfilClick = {}
         )
     }
 }
