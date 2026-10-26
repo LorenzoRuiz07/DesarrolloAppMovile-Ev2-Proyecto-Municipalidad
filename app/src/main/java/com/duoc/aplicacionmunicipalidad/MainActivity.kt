@@ -12,8 +12,8 @@ import androidx.navigation.compose.rememberNavController
 import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme
 import com.duoc.aplicacionmunicipalidad.view.HomeScreen
 import com.duoc.aplicacionmunicipalidad.view.LoginScreen
-
-
+import com.duoc.aplicacionmunicipalidad.view.ProfileScreen
+import com.duoc.aplicacionmunicipalidad.view.RegisterScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,11 +36,29 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate("home") {
                                         popUpTo("login") { inclusive = true }
                                     }
-                                }
+                                },
+                                onRegisterClick = { navController.navigate("registro") }
+                            )
+                        }
+                        composable("registro") {
+                            RegisterScreen(
+                                onRegisterSuccess = { navController.popBackStack() },
+                                onBackToLoginClick = { navController.popBackStack() }
                             )
                         }
                         composable("home") {
                             HomeScreen()
+                        }
+                        composable("perfil") {
+                            ProfileScreen(
+                                onBackClick = { navController.popBackStack() },
+                                onLogout = {
+                                    // Vuelve al login y borra home y perfil del historial
+                                    navController.navigate("login") {
+                                        popUpTo("home") { inclusive = true }
+                                    }
+                                }
+                            )
                         }
                     }
                 }

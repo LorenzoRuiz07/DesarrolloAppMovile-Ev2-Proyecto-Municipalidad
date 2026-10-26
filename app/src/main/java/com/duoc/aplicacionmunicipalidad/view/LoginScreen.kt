@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -19,13 +18,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.duoc.aplicacionmunicipalidad.viewmodel.LoginState
 import com.duoc.aplicacionmunicipalidad.viewmodel.LoginViewModel
-import java.nio.file.WatchEvent
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    onLoginSuccess: (String) -> Unit // Función que se ejecuta cuando el login es exitoso
+    onLoginSuccess: (String) -> Unit, // Función que se ejecuta cuando el login es exitoso
+    onForgotPasswordClick: () -> Unit = {},
+    onRegisterClick: () -> Unit = {}
 ) {
     // Variables para capturar el texto
     var username by remember { mutableStateOf("") }
@@ -59,18 +60,26 @@ fun LoginScreen(
         // Títulos
 
         Text(
-            textAlign = TextAlign.Center,
             text = "Municipalidad de San Joaquín",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
             color = Color.Gray,
-            modifier = Modifier.padding(bottom = 32.dp)
-
         )
         Text(
-            text = "Seguridad comunal",
-            fontSize = 20.sp,
-            color = Color.Black
+            text = "Inicia Sesión",
+            fontSize = 36.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            color = Color.Black,
+            modifier = Modifier.padding(top = 4.dp, bottom = 16.dp)
+        )
+        Text(
+            text = "Accede a todas las noticias de la Municipalidad desde tu celular",
+            fontSize = 16.sp,
+            textAlign = TextAlign.Center,
+            color = Color.Gray,
+            modifier = Modifier.padding(bottom = 32.dp)
         )
 
         // Campo de Usuario / RUT
@@ -82,7 +91,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(50),
             // Corrección para Material 3
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = primaryGreen,
@@ -98,10 +107,8 @@ fun LoginScreen(
             label = { Text("Contraseña") },
             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Contraseña") }, // Corrección de ícono
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 24.dp),
-            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(50),
             // Corrección para Material 3
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = primaryGreen,
@@ -109,6 +116,17 @@ fun LoginScreen(
             ),
             singleLine = true
         )
+        // ¿Olvidaste tu contraseña?
+        TextButton(
+            onClick = onForgotPasswordClick,
+            modifier = Modifier.padding(bottom = 8.dp)
+        ) {
+            Text(
+                text = "¿Olvidaste tu contraseña?",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
+        }
 
         // Mensaje de Error (solo se muestra si el estado es Error)
         if (loginState is LoginState.Error) {
@@ -133,12 +151,28 @@ fun LoginScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = primaryGreen)
             ) {
                 Text(
-                    text = "Ingresar",
+                    text = "Iniciar sesión",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
             }
+        }
+        // Registro
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = "¿No tienes una cuenta?",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
+        )
+        TextButton(onClick = onRegisterClick) {
+            Text(
+                text = "Regístrate aquí",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryGreen
+            )
         }
     }
 }

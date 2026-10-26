@@ -85,7 +85,8 @@ import com.duoc.aplicacionmunicipalidad.viewmodel.HomeViewModel
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onRequerimientoClick: (Requerimiento) -> Unit = {},
-    onNotificacionesClick: () -> Unit = {}
+    onNotificacionesClick: () -> Unit = {},
+    onPerfilClick: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -97,7 +98,8 @@ fun HomeScreen(
         onCategoriaChange = viewModel::onCategoriaChange,
         onPrioridadChange = viewModel::onPrioridadChange,
         onRequerimientoClick = onRequerimientoClick,
-        onNotificacionesClick = onNotificacionesClick
+        onNotificacionesClick = onNotificacionesClick,
+        onPerfilClick = onPerfilClick,
     )
 }
 
@@ -110,7 +112,8 @@ fun HomeContent(
     onCategoriaChange: (String?) -> Unit,
     onPrioridadChange: (String?) -> Unit,
     onRequerimientoClick: (Requerimiento) -> Unit,
-    onNotificacionesClick: () -> Unit
+    onNotificacionesClick: () -> Unit,
+    onPerfilClick: () -> Unit
 ) {
     val visibles = state.visibles
 
@@ -124,7 +127,7 @@ fun HomeContent(
     ) {
         item { Encabezado(onNotificacionesClick) }
 
-        item { TituloResidente() }
+        item { TituloResidente(onPerfilClick) }
 
         item {
             Text(
@@ -256,7 +259,7 @@ private fun Encabezado(onNotificacionesClick: () -> Unit) {
 }
 
 @Composable
-private fun TituloResidente() {
+private fun TituloResidente(onPerfilClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -271,6 +274,7 @@ private fun TituloResidente() {
         )
         Spacer(Modifier.width(8.dp))
         Surface(
+            onClick = onPerfilClick,
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.primaryContainer
         ) {
@@ -700,7 +704,8 @@ private fun HomeScreenPreview() {
             onCategoriaChange = {},
             onPrioridadChange = {},
             onRequerimientoClick = {},
-            onNotificacionesClick = {}
+            onNotificacionesClick = {},
+            onPerfilClick = {}
         )
     }
 }
