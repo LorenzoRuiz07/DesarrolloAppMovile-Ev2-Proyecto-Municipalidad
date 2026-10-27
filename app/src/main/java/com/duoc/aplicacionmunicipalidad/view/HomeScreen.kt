@@ -69,6 +69,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.ui.text.style.TextAlign
 import com.duoc.aplicacionmunicipalidad.model.CATEGORIAS
 import com.duoc.aplicacionmunicipalidad.model.ESTADOS
 import com.duoc.aplicacionmunicipalidad.model.PRIORIDADES
@@ -80,13 +84,16 @@ import com.duoc.aplicacionmunicipalidad.ui.theme.MapaZona
 import com.duoc.aplicacionmunicipalidad.viewmodel.HomeUiState
 import com.duoc.aplicacionmunicipalidad.viewmodel.HomeViewModel
 
-//Pantalla principal "Tu comuna, al día" (conecta el ViewModel con la UI)
+//Pantalla principal
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onRequerimientoClick: (Requerimiento) -> Unit = {},
     onNotificacionesClick: () -> Unit = {},
-    onPerfilClick: () -> Unit = {}
+    onPerfilClick: () -> Unit = {},
+    onNuevoRequerimientoClick: () -> Unit = {},
+    onMisCasosClick: () -> Unit = {},
+    onAyudaClick: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
 
@@ -99,7 +106,10 @@ fun HomeScreen(
         onPrioridadChange = viewModel::onPrioridadChange,
         onRequerimientoClick = onRequerimientoClick,
         onNotificacionesClick = onNotificacionesClick,
-        onProfilClick = onPerfilClick,
+        onPerfilClick = onPerfilClick,
+        onNuevoRequerimientoClick = onNuevoRequerimientoClick,
+        onMisCasosClick = onMisCasosClick,
+        onAyudaClick = onAyudaClick
     )
 }
 
@@ -113,98 +123,147 @@ fun HomeContent(
     onPrioridadChange: (String?) -> Unit,
     onRequerimientoClick: (Requerimiento) -> Unit,
     onNotificacionesClick: () -> Unit,
-    onProfilClick: () -> Unit
+    onPerfilClick: () -> Unit,
+    onNuevoRequerimientoClick: () -> Unit,
+    onMisCasosClick: () -> Unit,
+    onAyudaClick: () -> Unit
 ) {
     val visibles = state.visibles
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item { Encabezado(onNotificacionesClick) }
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
 
-        item { TituloResidente(onProfilClick) }
-
-        item {
-            Text(
-                text = "Consulta requerimientos del sector y sigue sus avances.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+        // Botón flotante "Nuevo requerimiento"
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onNuevoRequerimientoClick,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp),
+                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+                text = {
+                    Text(
+                        text = "Nuevo requerimiento",
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             )
-        }
+        },
 
-        item { CampoBusqueda(state.consulta, onConsultaChange) }
-
-        item { SelectorVista(state.verMapa, onVerMapaChange) }
-
-        item {
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FiltroChip("Estado", state.filtroEstado, ESTADOS, onEstadoChange)
-                FiltroChip("Categoría", state.filtroCategoria, CATEGORIAS, onCategoriaChange)
-                FiltroChip("Prioridad", state.filtroPrioridad, PRIORIDADES, onPrioridadChange)
-            }
-        }
-
-        if (state.verMapa) {
-            item {
-                MapaReferencial(
+        // Aviso + barra de navegación inferior
+        bottomBar = {
+            Column {
+                Text(
+                    text = "Casos ilustrativos · sin datos personales",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(420.dp)
+                        .padding(vertical = 8.dp)
+                )
+                BarraNavegacion(
+                    seleccionado = "inicio",
+                    onCasosClick = onMisCasosClick,
+                    onAyudaClick = onAyudaClick,
+                    onPerfilClick = onPerfilClick
                 )
             }
-        } else {
+        }
+    ) { paddingScaffold ->
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingScaffold),   // ya incluye barra de estado y barra inferior
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                start = 20.dp, end = 20.dp, top = 16.dp,
+                bottom = 96.dp               // espacio para que el botón flotante no tape la última tarjeta
+            ),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item { Encabezado(onNotificacionesClick) }
+
+            item { TituloResidente(onPerfilClick) }
+
             item {
-                MapaReferencial(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(142.dp),
-                    onExpandir = { onVerMapaChange(true) }
+                Text(
+                    text = "Consulta requerimientos del sector y sigue sus avances.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+
+            item { CampoBusqueda(state.consulta, onConsultaChange) }
+
+            item { SelectorVista(state.verMapa, onVerMapaChange) }
 
             item {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(
-                        text = "Requerimientos del sector",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "Más recientes",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    FiltroChip("Estado", state.filtroEstado, ESTADOS, onEstadoChange)
+                    FiltroChip("Categoría", state.filtroCategoria, CATEGORIAS, onCategoriaChange)
+                    FiltroChip("Prioridad", state.filtroPrioridad, PRIORIDADES, onPrioridadChange)
                 }
             }
 
-            if (visibles.isEmpty()) {
+            if (state.verMapa) {
+                // TODO: reemplazar por GoogleMaps() con marcadores de los requerimientos visibles
                 item {
-                    Text(
-                        text = "No hay requerimientos que coincidan con tu búsqueda.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 16.dp)
+                    MapaReferencial(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(420.dp)
                     )
                 }
             } else {
-                items(visibles, key = { it.id }) { requerimiento ->
-                    RequerimientoCard(
-                        requerimiento = requerimiento,
-                        destacado = requerimiento.estado == "En atención",
-                        onClick = { onRequerimientoClick(requerimiento) }
+                item {
+                    MapaReferencial(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(142.dp),
+                        onExpandir = { onVerMapaChange(true) }
                     )
+                }
+
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Requerimientos del sector",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "Más recientes",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                if (visibles.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No hay requerimientos que coincidan con tu búsqueda.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        )
+                    }
+                } else {
+                    items(visibles, key = { it.id }) { requerimiento ->
+                        RequerimientoCard(
+                            requerimiento = requerimiento,
+                            destacado = requerimiento.estado == "En atención",
+                            onClick = { onRequerimientoClick(requerimiento) }
+                        )
+                    }
                 }
             }
         }
@@ -400,7 +459,7 @@ private fun Segmento(
 @Composable
 private fun FiltroChip(
     titulo: String,
-    seleccion: String?,           // null = sin filtro
+    seleccion: String?,
     opciones: List<String>,
     onSeleccion: (String?) -> Unit
 ) {
@@ -704,7 +763,10 @@ private fun HomeScreenPreview() {
             onPrioridadChange = {},
             onRequerimientoClick = {},
             onNotificacionesClick = {},
-            onProfilClick = {}
+            onPerfilClick = {},
+            onNuevoRequerimientoClick = {},
+            onMisCasosClick = {},
+            onAyudaClick = {}
         )
     }
 }

@@ -32,7 +32,6 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(
                                 onLoginSuccess = { perfil ->
                                     println("¡Login exitoso! Bienvenido perfil: $perfil")
-                                    // Navega a home y borra login del historial para no volver al presionar 'Atrás'
                                     navController.navigate("home") {
                                         popUpTo("login") { inclusive = true }
                                     }
@@ -47,16 +46,17 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("home") {
-                            HomeScreen(onPerfilClick = { navController.navigate("perfil")
-                            }
+                            HomeScreen(
+                                onPerfilClick = { navController.navigate("perfil") },
+                                onNuevoRequerimientoClick = {},
+                                onMisCasosClick = {},
+                                onAyudaClick = {}
                             )
-
                         }
                         composable("perfil") {
                             ProfileScreen(
                                 onBackClick = { navController.popBackStack() },
                                 onLogout = {
-                                    // Vuelve al login y borra home y perfil del historial
                                     navController.navigate("login") {
                                         popUpTo("home") { inclusive = true }
                                     }
