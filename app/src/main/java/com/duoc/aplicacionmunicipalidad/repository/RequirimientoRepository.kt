@@ -22,7 +22,11 @@ class RequerimientoRepository {
                 categoria = "Alumbrado",
                 prioridad = "Media",
                 estado = "En atención",
-                fechaMillis = fecha(15, 18, 40)
+                fechaMillis = fecha(15, 18, 40),
+                tipo = "Luminaria apagada",
+                descripcion = "La luminaria junto al acceso por Carmen no enciende. El sendero de la plaza queda oscuro al anochecer.",
+                evidenciaNombre = "plaza_valdivieso.jpg",
+                evidenciaDetalle = "15 oct · 18:40 · 1,8 MB"
             ),
             Requerimiento(
                 id = "SJ-2026-0147",

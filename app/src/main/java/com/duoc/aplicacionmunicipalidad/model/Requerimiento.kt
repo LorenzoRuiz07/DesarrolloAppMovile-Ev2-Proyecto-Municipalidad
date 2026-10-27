@@ -13,7 +13,9 @@ data class Requerimiento(
     val estado: String,
     val fechaMillis: Long,
     val tipo: String = "",
-    val descripcion: String = ""
+    val descripcion: String = "",
+    val evidenciaNombre: String = "",
+    val evidenciaDetalle: String = ""
 ) {
 
     val fechaFormateada: String

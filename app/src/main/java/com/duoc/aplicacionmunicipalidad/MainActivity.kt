@@ -15,6 +15,9 @@ import com.duoc.aplicacionmunicipalidad.view.LoginScreen
 import com.duoc.aplicacionmunicipalidad.view.NuevoRequerimientoScreen
 import com.duoc.aplicacionmunicipalidad.view.ProfileScreen
 import com.duoc.aplicacionmunicipalidad.view.RegisterScreen
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.duoc.aplicacionmunicipalidad.view.SeguimientoScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +51,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("home") {
                             HomeScreen(
+                                onRequerimientoClick = { r -> navController.navigate("detalle/${r.id}") },
                                 onPerfilClick = { navController.navigate("perfil") },
                                 onNuevoRequerimientoClick = { navController.navigate("nuevo")},
                                 onMisCasosClick = {},
@@ -68,6 +72,16 @@ class MainActivity : ComponentActivity() {
                             NuevoRequerimientoScreen(
                                 onBackClick = { navController.popBackStack() },
                                 onEnviado = { navController.popBackStack() }
+                            )
+                        }
+                        composable(
+                            route = "detalle/{id}",
+                            arguments = listOf(navArgument("id") { type = NavType.StringType })
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getString("id") ?: ""
+                            SeguimientoScreen(
+                                idRequerimiento = id,
+                                onBackClick = { navController.popBackStack() }
                             )
                         }
                     }
