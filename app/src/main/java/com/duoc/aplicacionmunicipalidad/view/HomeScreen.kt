@@ -150,11 +150,11 @@ fun HomeContent(
             )
         },
 
-        // Aviso + barra de navegación inferior
+        //barra de navegación inferior
         bottomBar = {
             Column {
                 Text(
-                    text = "Casos ilustrativos · sin datos personales",
+                    text = "Municipalidad de San Joaquín",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

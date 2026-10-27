@@ -1,12 +1,14 @@
 package com.duoc.aplicacionmunicipalidad.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.duoc.aplicacionmunicipalidad.model.Requerimiento
 import com.duoc.aplicacionmunicipalidad.repository.RequerimientoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class HomeUiState(
     val consulta: String = "",
@@ -33,13 +35,20 @@ data class HomeUiState(
 }
 
 class HomeViewModel(
-    repository: RequerimientoRepository = RequerimientoRepository()
+    private val repository: RequerimientoRepository = RequerimientoRepository()
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(
-        HomeUiState(requerimientos = repository.obtenerRequerimientos())
-    )
+    private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    init {
+
+        viewModelScope.launch {
+            repository.requerimientos.collect { lista ->
+                _uiState.update { it.copy(requerimientos = lista) }
+            }
+        }
+    }
 
     fun onConsultaChange(valor: String) = _uiState.update { it.copy(consulta = valor) }
 

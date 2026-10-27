@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme
 import com.duoc.aplicacionmunicipalidad.view.HomeScreen
 import com.duoc.aplicacionmunicipalidad.view.LoginScreen
+import com.duoc.aplicacionmunicipalidad.view.NuevoRequerimientoScreen
 import com.duoc.aplicacionmunicipalidad.view.ProfileScreen
 import com.duoc.aplicacionmunicipalidad.view.RegisterScreen
 
@@ -48,7 +49,7 @@ class MainActivity : ComponentActivity() {
                         composable("home") {
                             HomeScreen(
                                 onPerfilClick = { navController.navigate("perfil") },
-                                onNuevoRequerimientoClick = {},
+                                onNuevoRequerimientoClick = { navController.navigate("nuevo")},
                                 onMisCasosClick = {},
                                 onAyudaClick = {}
                             )
@@ -61,6 +62,12 @@ class MainActivity : ComponentActivity() {
                                         popUpTo("home") { inclusive = true }
                                     }
                                 }
+                            )
+                        }
+                        composable("nuevo") {
+                            NuevoRequerimientoScreen(
+                                onBackClick = { navController.popBackStack() },
+                                onEnviado = { navController.popBackStack() }
                             )
                         }
                     }
