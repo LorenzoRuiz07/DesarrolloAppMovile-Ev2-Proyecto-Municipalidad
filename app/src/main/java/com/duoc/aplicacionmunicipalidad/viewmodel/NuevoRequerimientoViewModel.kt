@@ -146,7 +146,8 @@ class NuevoRequerimientoViewModel(
                     tipo = s.tipo,
                     descripcion = s.descripcion.trim(),
                     evidenciaNombre = s.evidencia?.nombre ?: "",
-                    evidenciaDetalle = s.evidencia?.detalle ?: ""
+                    evidenciaDetalle = s.evidencia?.detalle ?: "",
+                    esMio = true
                 )
             )
             _uiState.update { it.copy(enviando = false, idEnviado = id) }

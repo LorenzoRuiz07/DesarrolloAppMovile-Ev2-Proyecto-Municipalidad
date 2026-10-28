@@ -2,6 +2,7 @@ package com.duoc.aplicacionmunicipalidad.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.duoc.aplicacionmunicipalidad.model.PerfilUsuario
+import com.duoc.aplicacionmunicipalidad.model.SesionUsuario
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +25,7 @@ class ProfileViewModel : ViewModel() {
                 correo = "maria.perez@correo.cl",
                 telefono = "+56 9 1234 5678",
                 direccion = "Carmen 1234, San Joaquín",
-                tipoPerfil = "Residente"
+                tipoPerfil = SesionUsuario.perfil
             )
         )
     )

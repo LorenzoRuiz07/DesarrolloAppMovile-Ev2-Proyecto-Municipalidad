@@ -76,3 +76,17 @@ fun unidadDe(categoria: String): String = when (categoria) {
     "Tránsito" -> "Dirección de Tránsito"
     else -> "Por asignar"
 }
+// Opciones del formulario de gestión
+val UNIDADES = listOf(
+    "Mantención de Alumbrado", "Seguridad Ciudadana", "Aseo y Ornato", "Dirección de Tránsito"
+)
+val ROLES_DERIVACION = listOf("Operador", "Supervisor", "Administrador")
+
+// Unidad asignada por el funcionario, o la que corresponde según la categoría
+fun unidadResponsable(r: Requerimiento): String = r.unidad.ifBlank { unidadDe(r.categoria) }
+
+fun siguienteEtapa(estado: String): String = when (estado) {
+    "Recibido" -> "Siguiente etapa: En atención. Valida el caso y asígnalo a una unidad."
+    "En atención" -> "Siguiente etapa: Resuelto. Adjunta el resultado de la intervención antes del cierre."
+    else -> "Siguiente etapa: Cierre. Queda pendiente la validación final."
+}

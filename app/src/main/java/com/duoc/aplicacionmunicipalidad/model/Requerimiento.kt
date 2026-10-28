@@ -15,7 +15,12 @@ data class Requerimiento(
     val tipo: String = "",
     val descripcion: String = "",
     val evidenciaNombre: String = "",
-    val evidenciaDetalle: String = ""
+    val evidenciaDetalle: String = "",
+    val esMio: Boolean = false,
+    val unidad: String = "",
+    val derivadoA: String = "",
+    val observacion: String = "",
+    val observacionVisible: Boolean = false
 ) {
 
     val fechaFormateada: String

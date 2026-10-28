@@ -77,6 +77,7 @@ import com.duoc.aplicacionmunicipalidad.model.CATEGORIAS
 import com.duoc.aplicacionmunicipalidad.model.ESTADOS
 import com.duoc.aplicacionmunicipalidad.model.PRIORIDADES
 import com.duoc.aplicacionmunicipalidad.model.Requerimiento
+import com.duoc.aplicacionmunicipalidad.model.SesionUsuario
 import com.duoc.aplicacionmunicipalidad.repository.RequerimientoRepository
 import com.duoc.aplicacionmunicipalidad.ui.theme.MapaCalle
 import com.duoc.aplicacionmunicipalidad.ui.theme.MapaFondo
@@ -348,7 +349,7 @@ private fun TituloResidente(onPerfilClick: () -> Unit) {
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    text = "Residente",
+                    text = SesionUsuario.perfil,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer

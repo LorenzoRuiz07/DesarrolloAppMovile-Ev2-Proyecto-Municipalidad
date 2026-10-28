@@ -42,7 +42,7 @@ import com.duoc.aplicacionmunicipalidad.model.indiceEtapaActual
 import com.duoc.aplicacionmunicipalidad.model.mensajeEstado
 import com.duoc.aplicacionmunicipalidad.model.tituloEstado
 import com.duoc.aplicacionmunicipalidad.model.ultimaActualizacion
-import com.duoc.aplicacionmunicipalidad.model.unidadDe
+import com.duoc.aplicacionmunicipalidad.model.unidadResponsable
 import com.duoc.aplicacionmunicipalidad.viewmodel.SeguimientoViewModel
 
 @Composable
@@ -231,7 +231,16 @@ fun SeguimientoScreen(
                             text = "Última actualización · ${ultimaActualizacion(r)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
+
                         )
+                        if (r.observacionVisible && r.observacion.isNotBlank()) {
+                            Text(
+                                text = "Mensaje del equipo: ${r.observacion}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
                 }
 
@@ -258,7 +267,7 @@ fun SeguimientoScreen(
                         FilaInfo(
                             icono = Icons.Outlined.Apartment,
                             etiqueta = "Unidad responsable",
-                            valor = unidadDe(r.categoria)
+                            valor = unidadResponsable(r)
                         )
                     }
                 }
@@ -421,7 +430,7 @@ fun SeguimientoScreen(
 // ---------------------------------------------------------------------------------------------
 
 @Composable
-private fun ChipEstado(estado: String) {
+ fun ChipEstado(estado: String) {
     val fondo = when (estado) {
         "En atención" -> MaterialTheme.colorScheme.primaryContainer
         "Resuelto" -> Color.White
@@ -449,13 +458,13 @@ private fun ChipEstado(estado: String) {
     }
 }
 
-private fun colorFondoPrioridad(prioridad: String): Color = when (prioridad) {
+ fun colorFondoPrioridad(prioridad: String): Color = when (prioridad) {
     "Alta" -> Color(0xFFFFDAD6)
     "Media" -> Color(0xFFFFE5BF)
     else -> Color(0xFFE3EAE6)
 }
 
-private fun colorTextoPrioridad(prioridad: String): Color = when (prioridad) {
+ fun colorTextoPrioridad(prioridad: String): Color = when (prioridad) {
     "Alta" -> Color(0xFF8C1D18)
     "Media" -> Color(0xFF6B4300)
     else -> Color(0xFF3F4A46)
@@ -463,7 +472,7 @@ private fun colorTextoPrioridad(prioridad: String): Color = when (prioridad) {
 
 // Una fila con ícono, etiqueta y valor
 @Composable
-private fun FilaInfo(icono: ImageVector, etiqueta: String, valor: String) {
+ fun FilaInfo(icono: ImageVector, etiqueta: String, valor: String) {
     Row(verticalAlignment = Alignment.Top) {
         Icon(
             imageVector = icono,
@@ -490,7 +499,7 @@ private fun FilaInfo(icono: ImageVector, etiqueta: String, valor: String) {
 
 // Una etapa de la línea de tiempo: círculo + línea hacia la siguiente + textos
 @Composable
-private fun EtapaItem(etapa: Etapa, esUltima: Boolean) {
+ fun EtapaItem(etapa: Etapa, esUltima: Boolean) {
     Row(modifier = Modifier.height(IntrinsicSize.Min)) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             when {

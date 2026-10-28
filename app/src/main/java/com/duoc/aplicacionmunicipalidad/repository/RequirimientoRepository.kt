@@ -26,7 +26,10 @@ class RequerimientoRepository {
                 tipo = "Luminaria apagada",
                 descripcion = "La luminaria junto al acceso por Carmen no enciende. El sendero de la plaza queda oscuro al anochecer.",
                 evidenciaNombre = "plaza_valdivieso.jpg",
-                evidenciaDetalle = "15 oct · 18:40 · 1,8 MB"
+                evidenciaDetalle = "15 oct · 18:40 · 1,8 MB",
+                esMio = true,
+                derivadoA = "Supervisor",
+                observacion = "Se solicita revisión del circuito y reposición de la luminaria."
             ),
             Requerimiento(
                 id = "SJ-2026-0147",
@@ -56,7 +59,8 @@ class RequerimientoRepository {
                 categoria = "Espacio público",
                 prioridad = "Baja",
                 estado = "Resuelto",
-                fechaMillis = fecha(12, 11, 30)
+                fechaMillis = fecha(12, 11, 30),
+                esMio = true
             )
         )
 
@@ -74,6 +78,16 @@ class RequerimientoRepository {
 
     fun agregar(requerimiento: Requerimiento) {
         lista.update { listOf(requerimiento) + it }
+    }
+
+    fun obtenerPorId(id: String): Requerimiento? =
+        lista.value.firstOrNull { it.id == id }
+
+    // Reemplaza el requerimiento que tiene el mismo id
+    fun actualizar(actualizado: Requerimiento) {
+        lista.update { actual ->
+            actual.map { if (it.id == actualizado.id) actualizado else it }
+        }
     }
 
 

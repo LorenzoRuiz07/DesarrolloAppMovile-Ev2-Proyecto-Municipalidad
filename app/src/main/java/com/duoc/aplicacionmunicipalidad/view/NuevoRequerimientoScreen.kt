@@ -405,7 +405,7 @@ private fun Seccion(
 
 // Campo que no se escribe: al tocarlo ejecuta una acción (abrir menú, calendario, reloj)
 @Composable
-private fun CampoClicable(
+ fun CampoClicable(
     etiqueta: String,
     valor: String,
     icono: ImageVector,
@@ -434,7 +434,7 @@ private fun CampoClicable(
 
 // Campo con menú desplegable
 @Composable
-private fun CampoSeleccion(
+ fun CampoSeleccion(
     etiqueta: String,
     valor: String,
     opciones: List<String>,
