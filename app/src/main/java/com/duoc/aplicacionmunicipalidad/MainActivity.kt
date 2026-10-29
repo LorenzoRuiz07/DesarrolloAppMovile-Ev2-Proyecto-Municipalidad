@@ -4,8 +4,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,6 +31,7 @@ import com.duoc.aplicacionmunicipalidad.view.NuevoRequerimientoScreen
 import com.duoc.aplicacionmunicipalidad.view.ProfileScreen
 import com.duoc.aplicacionmunicipalidad.view.RegisterScreen
 import com.duoc.aplicacionmunicipalidad.view.SeguimientoScreen
+import com.duoc.aplicacionmunicipalidad.viewmodel.SesionViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,90 +40,107 @@ class MainActivity : ComponentActivity() {
         setContent {
             AplicacionMuniSanJoaquinTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    val navController = rememberNavController()
 
-                    // El residente ve el seguimiento; el funcionario abre la gestión del caso
-                    val abrirRequerimiento: (Requerimiento) -> Unit = { r ->
-                        val ruta = if (SesionUsuario.esFuncionario) "gestion/${r.id}" else "detalle/${r.id}"
-                        navController.navigate(ruta)
-                    }
+                    val sesionViewModel: SesionViewModel = viewModel()
+                    val sesion by sesionViewModel.uiState.collectAsState()
 
-                    NavHost(
-                        navController = navController,
-                        startDestination = "login"
-                    ) {
-                        composable("login") {
-                            LoginScreen(
-                                onLoginSuccess = { perfil ->
-                                    SesionUsuario.perfil = perfil
-                                    // Navega a home y borra login del historial para no volver al presionar 'Atrás'
-                                    navController.navigate("home") {
-                                        popUpTo("login") { inclusive = true }
+                    if (sesion.cargando) {
+                        // Mientras se lee la base de datos
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        val navController = rememberNavController()
+
+                        // Se decide una sola vez: con sesión guardada entra directo a home
+                        val destinoInicial = remember {
+                            if (sesion.perfil != null) "home" else "login"
+                        }
+
+                        // El residente ve el seguimiento; el funcionario abre la gestión del caso
+                        val abrirRequerimiento: (Requerimiento) -> Unit = { r ->
+                            val ruta = if (SesionUsuario.esFuncionario) "gestion/${r.id}" else "detalle/${r.id}"
+                            navController.navigate(ruta)
+                        }
+
+                        NavHost(
+                            navController = navController,
+                            startDestination = destinoInicial
+                        ) {
+                            composable("login") {
+                                LoginScreen(
+                                    onLoginSuccess = { perfil ->
+                                        sesionViewModel.iniciarSesion(perfil)   // guarda la sesión en Room
+                                        navController.navigate("home") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
+                                    },
+                                    onRegisterClick = { navController.navigate("registro") }
+                                )
+                            }
+                            composable("registro") {
+                                RegisterScreen(
+                                    onRegisterSuccess = { navController.popBackStack() },
+                                    onBackToLoginClick = { navController.popBackStack() }
+                                )
+                            }
+                            composable("home") {
+                                HomeScreen(
+                                    onRequerimientoClick = abrirRequerimiento,
+                                    onPerfilClick = { navController.navigate("perfil") },
+                                    onNuevoRequerimientoClick = { navController.navigate("nuevo") },
+                                    onMisCasosClick = { navController.navigate("casos") },
+                                    onAyudaClick = { /* TODO: pantalla "Ayuda" */ }
+                                )
+                            }
+                            composable("casos") {
+                                MisCasosScreen(
+                                    onRequerimientoClick = abrirRequerimiento,
+                                    onInicioClick = { navController.popBackStack("home", false) },
+                                    onAyudaClick = { /* TODO: pantalla "Ayuda" */ },
+                                    onPerfilClick = { navController.navigate("perfil") }
+                                )
+                            }
+                            composable("perfil") {
+                                ProfileScreen(
+                                    onBackClick = { navController.popBackStack() },
+                                    onLogout = {
+                                        sesionViewModel.cerrarSesion()          // borra la sesión de Room
+                                        navController.navigate("login") {
+                                            popUpTo("home") { inclusive = true }
+                                        }
                                     }
-                                },
-                                onRegisterClick = { navController.navigate("registro") }
-                            )
-                        }
-                        composable("registro") {
-                            RegisterScreen(
-                                onRegisterSuccess = { navController.popBackStack() },
-                                onBackToLoginClick = { navController.popBackStack() }
-                            )
-                        }
-                        composable("home") {
-                            HomeScreen(
-                                onRequerimientoClick = abrirRequerimiento,
-                                onPerfilClick = { navController.navigate("perfil") },
-                                onNuevoRequerimientoClick = { navController.navigate("nuevo") },
-                                onMisCasosClick = { navController.navigate("casos") },
-                                onAyudaClick = { /* TODO: pantalla "Ayuda" */ }
-                            )
-                        }
-                        composable("casos") {
-                            MisCasosScreen(
-                                onRequerimientoClick = abrirRequerimiento,
-                                onInicioClick = { navController.popBackStack("home", false) },
-                                onAyudaClick = { /* TODO: pantalla "Ayuda" */ },
-                                onPerfilClick = { navController.navigate("perfil") }
-                            )
-                        }
-                        composable("perfil") {
-                            ProfileScreen(
-                                onBackClick = { navController.popBackStack() },
-                                onLogout = {
-                                    SesionUsuario.perfil = "Residente"
-                                    // Vuelve al login y borra las pantallas anteriores del historial
-                                    navController.navigate("login") {
-                                        popUpTo("home") { inclusive = true }
-                                    }
-                                }
-                            )
-                        }
-                        composable("nuevo") {
-                            NuevoRequerimientoScreen(
-                                onBackClick = { navController.popBackStack() },
-                                onEnviado = { navController.popBackStack() }
-                            )
-                        }
-                        composable(
-                            route = "detalle/{id}",
-                            arguments = listOf(navArgument("id") { type = NavType.StringType })
-                        ) { backStackEntry ->
-                            val id = backStackEntry.arguments?.getString("id") ?: ""
-                            SeguimientoScreen(
-                                idRequerimiento = id,
-                                onBackClick = { navController.popBackStack() }
-                            )
-                        }
-                        composable(
-                            route = "gestion/{id}",
-                            arguments = listOf(navArgument("id") { type = NavType.StringType })
-                        ) { backStackEntry ->
-                            val id = backStackEntry.arguments?.getString("id") ?: ""
-                            GestionScreen(
-                                idRequerimiento = id,
-                                onBackClick = { navController.popBackStack() }
-                            )
+                                )
+                            }
+                            composable("nuevo") {
+                                NuevoRequerimientoScreen(
+                                    onBackClick = { navController.popBackStack() },
+                                    onEnviado = { navController.popBackStack() }
+                                )
+                            }
+                            composable(
+                                route = "detalle/{id}",
+                                arguments = listOf(navArgument("id") { type = NavType.StringType })
+                            ) { backStackEntry ->
+                                val id = backStackEntry.arguments?.getString("id") ?: ""
+                                SeguimientoScreen(
+                                    idRequerimiento = id,
+                                    onBackClick = { navController.popBackStack() }
+                                )
+                            }
+                            composable(
+                                route = "gestion/{id}",
+                                arguments = listOf(navArgument("id") { type = NavType.StringType })
+                            ) { backStackEntry ->
+                                val id = backStackEntry.arguments?.getString("id") ?: ""
+                                GestionScreen(
+                                    idRequerimiento = id,
+                                    onBackClick = { navController.popBackStack() }
+                                )
+                            }
                         }
                     }
                 }
