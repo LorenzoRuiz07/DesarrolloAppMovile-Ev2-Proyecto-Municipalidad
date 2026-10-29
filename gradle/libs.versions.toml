@@ -11,7 +11,7 @@ composeBom = "2026.02.01"
 foundation = "1.12.1"
 navigationCompose = "2.10.2"
 uiText = "1.12.1"
-ksp = "2.3.4"
+ksp = "2.3.10"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
