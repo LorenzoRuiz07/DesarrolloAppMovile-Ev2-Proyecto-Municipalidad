@@ -17,16 +17,18 @@ data class ProfileUiState(
 class ProfileViewModel : ViewModel() {
 
     //Datos de ejemplo
+    private val defaultPerfil = PerfilUsuario(
+        nombre = "María Pérez Soto",
+        rut = "12.345.678-5",
+        correo = "maria.perez@correo.cl",
+        telefono = "+56 9 1234 5678",
+        direccion = "Carmen 1234, San Joaquín",
+        tipoPerfil = SesionUsuario.perfil
+    )
+
     private val _uiState = MutableStateFlow(
         ProfileUiState(
-            perfil = PerfilUsuario(
-                nombre = "María Pérez Soto",
-                rut = "12.345.678-5",
-                correo = "maria.perez@correo.cl",
-                telefono = "+56 9 1234 5678",
-                direccion = "Carmen 1234, San Joaquín",
-                tipoPerfil = SesionUsuario.perfil
-            )
+            perfil = SesionUsuario.perfilUsuarioActual ?: defaultPerfil
         )
     )
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
@@ -45,16 +47,20 @@ class ProfileViewModel : ViewModel() {
         telefono: String,
         direccion: String
     ) {
-        _uiState.update { state ->
-            state.copy(
-                perfil = state.perfil.copy(
-                    nombre = nombre,
-                    rut = rut,
-                    correo = correo,
-                    telefono = telefono,
-                    direccion = direccion
-                )
-            )
-        }
+        val nuevoPerfil = _uiState.value.perfil.copy(
+            nombre = nombre,
+            rut = rut,
+            correo = correo,
+            telefono = telefono,
+            direccion = direccion
+        )
+        SesionUsuario.perfilUsuarioActual = nuevoPerfil
+        _uiState.update { it.copy(perfil = nuevoPerfil) }
+    }
+
+    fun onActualizarFoto(foto: Any?) {
+        val nuevoPerfil = _uiState.value.perfil.copy(fotoPerfil = foto)
+        SesionUsuario.perfilUsuarioActual = nuevoPerfil
+        _uiState.update { it.copy(perfil = nuevoPerfil) }
     }
 }

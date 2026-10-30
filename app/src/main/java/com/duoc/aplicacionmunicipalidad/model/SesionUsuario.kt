@@ -5,4 +5,7 @@ object SesionUsuario {
 
     val esFuncionario: Boolean
         get() = perfil != "Residente"
+
+    // Datos globales para persistir en memoria el perfil del usuario actual
+    var perfilUsuarioActual: PerfilUsuario? = null
 }

@@ -7,7 +7,8 @@ data class PerfilUsuario(
     val correo: String,
     val telefono: String,
     val direccion: String,
-    val tipoPerfil: String
+    val tipoPerfil: String,
+    val fotoPerfil: Any? = null // Puede ser un Bitmap (cámara) o Uri (galería)
 ) {
     //Iniciales para el avatar
     val iniciales: String

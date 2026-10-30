@@ -1,7 +1,13 @@
 package com.duoc.aplicacionmunicipalidad.view
 
+import android.graphics.Bitmap
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -11,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
@@ -28,11 +35,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.duoc.aplicacionmunicipalidad.viewmodel.ProfileViewModel
 
 @Composable
@@ -44,8 +53,31 @@ fun ProfileScreen(
     val state by viewModel.uiState.collectAsState()
     val perfil = state.perfil
     var mostrarDialogoEditar by remember { mutableStateOf(false) }
+    var mostrarOpcionesFoto by remember { mutableStateOf(false) }
+    var fotoTemporal by remember { mutableStateOf<Any?>(null) }
+    var mostrarConfirmacion by remember { mutableStateOf(false) }
 
     val primaryGreen = Color(0xFF00796B)
+
+    // Lanzador para la cámara (TakePicturePreview devuelve un Bitmap)
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            fotoTemporal = bitmap
+            mostrarConfirmacion = true
+        }
+    }
+
+    // Lanzador para la galería (PickVisualMedia devuelve una Uri)
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            fotoTemporal = uri
+            mostrarConfirmacion = true
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -73,20 +105,53 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //Avatar con iniciales
+        //Avatar con iniciales o foto
         Box(
             modifier = Modifier
                 .size(110.dp)
                 .clip(CircleShape)
-                .background(primaryGreen),
+                .background(primaryGreen)
+                .clickable { mostrarOpcionesFoto = true },
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = perfil.iniciales,
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            if (perfil.fotoPerfil != null) {
+                AsyncImage(
+                    model = perfil.fotoPerfil,
+                    contentDescription = "Foto de perfil",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Text(
+                    text = perfil.iniciales,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
+            
+            // Ícono de cámara pequeño en la esquina inferior derecha
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .padding(8.dp),
+                contentAlignment = Alignment.BottomEnd
+            ) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White,
+                    modifier = Modifier.size(30.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CameraAlt,
+                        contentDescription = "Cambiar foto",
+                        tint = primaryGreen,
+                        modifier = Modifier
+                            .padding(6.dp)
+                            .fillMaxSize()
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -253,6 +318,84 @@ fun ProfileScreen(
             onGuardar = { nombre, rut, correo, telefono, direccion ->
                 viewModel.onGuardarPerfil(nombre, rut, correo, telefono, direccion)
                 mostrarDialogoEditar = false
+            }
+        )
+    }
+    
+    if (mostrarOpcionesFoto) {
+        AlertDialog(
+            onDismissRequest = { mostrarOpcionesFoto = false },
+            title = { Text("Cambiar foto de perfil") },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "Tomar foto con la cámara",
+                        color = primaryGreen,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                mostrarOpcionesFoto = false
+                                cameraLauncher.launch(null)
+                            }
+                            .padding(vertical = 8.dp)
+                    )
+                    Text(
+                        text = "Elegir de la galería",
+                        color = primaryGreen,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                mostrarOpcionesFoto = false
+                                galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                            }
+                            .padding(vertical = 8.dp)
+                    )
+                    if (perfil.fotoPerfil != null) {
+                        Text(
+                            text = "Eliminar foto actual",
+                            color = Color.Red,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    mostrarOpcionesFoto = false
+                                    viewModel.onActualizarFoto(null)
+                                }
+                                .padding(vertical = 8.dp)
+                        )
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { mostrarOpcionesFoto = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
+            }
+        )
+    }
+
+    if (mostrarConfirmacion) {
+        AlertDialog(
+            onDismissRequest = { mostrarConfirmacion = false },
+            title = { Text("Confirmar foto") },
+            text = { Text("¿Deseas guardar esta foto como tu foto de perfil?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.onActualizarFoto(fotoTemporal)
+                        mostrarConfirmacion = false
+                    }
+                ) {
+                    Text("Guardar", fontWeight = FontWeight.Bold, color = primaryGreen)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { mostrarConfirmacion = false }) {
+                    Text("Cancelar", color = Color.Gray)
+                }
             }
         )
     }
