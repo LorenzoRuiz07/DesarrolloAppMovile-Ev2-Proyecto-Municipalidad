@@ -37,4 +37,24 @@ class ProfileViewModel : ViewModel() {
     fun onSalirClick() = _uiState.update { it.copy(mostrarDialogoSalir = true) }
 
     fun onDialogoDismiss() = _uiState.update { it.copy(mostrarDialogoSalir = false) }
+    
+    fun onGuardarPerfil(
+        nombre: String,
+        rut: String,
+        correo: String,
+        telefono: String,
+        direccion: String
+    ) {
+        _uiState.update { state ->
+            state.copy(
+                perfil = state.perfil.copy(
+                    nombre = nombre,
+                    rut = rut,
+                    correo = correo,
+                    telefono = telefono,
+                    direccion = direccion
+                )
+            )
+        }
+    }
 }

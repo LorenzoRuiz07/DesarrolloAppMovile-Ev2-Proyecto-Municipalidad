@@ -20,6 +20,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,12 +39,11 @@ import com.duoc.aplicacionmunicipalidad.viewmodel.ProfileViewModel
 fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel(),
     onBackClick: () -> Unit = {},
-    onEditClick: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     val perfil = state.perfil
-
+    var mostrarDialogoEditar by remember { mutableStateOf(false) }
 
     val primaryGreen = Color(0xFF00796B)
 
@@ -178,7 +180,7 @@ fun ProfileScreen(
 
         //Botones
         Button(
-            onClick = onEditClick,
+            onClick = { mostrarDialogoEditar = true },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -243,6 +245,93 @@ fun ProfileScreen(
             }
         )
     }
+
+    if (mostrarDialogoEditar) {
+        DialogoEditarPerfil(
+            perfilInicial = perfil,
+            onDismiss = { mostrarDialogoEditar = false },
+            onGuardar = { nombre, rut, correo, telefono, direccion ->
+                viewModel.onGuardarPerfil(nombre, rut, correo, telefono, direccion)
+                mostrarDialogoEditar = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun DialogoEditarPerfil(
+    perfilInicial: com.duoc.aplicacionmunicipalidad.model.PerfilUsuario,
+    onDismiss: () -> Unit,
+    onGuardar: (String, String, String, String, String) -> Unit
+) {
+    var nombre by remember { mutableStateOf(perfilInicial.nombre) }
+    var rut by remember { mutableStateOf(perfilInicial.rut) }
+    var correo by remember { mutableStateOf(perfilInicial.correo) }
+    var telefono by remember { mutableStateOf(perfilInicial.telefono) }
+    var direccion by remember { mutableStateOf(perfilInicial.direccion) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar Perfil") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = nombre,
+                    onValueChange = { nombre = it },
+                    label = { Text("Nombre") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = rut,
+                    onValueChange = { rut = it },
+                    label = { Text("RUT") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = correo,
+                    onValueChange = { correo = it },
+                    label = { Text("Correo electrónico") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = telefono,
+                    onValueChange = { telefono = it },
+                    label = { Text("Teléfono") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = direccion,
+                    onValueChange = { direccion = it },
+                    label = { Text("Dirección o sector") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onGuardar(nombre, rut, correo, telefono, direccion)
+                }
+            ) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
 
 @Composable
