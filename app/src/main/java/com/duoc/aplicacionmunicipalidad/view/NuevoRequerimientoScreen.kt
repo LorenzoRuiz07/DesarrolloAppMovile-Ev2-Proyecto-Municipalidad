@@ -36,11 +36,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.graphics.Bitmap
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.duoc.aplicacionmunicipalidad.model.CATEGORIAS
 import com.duoc.aplicacionmunicipalidad.model.tiposDe
 import com.duoc.aplicacionmunicipalidad.viewmodel.Evidencia
 import com.duoc.aplicacionmunicipalidad.viewmodel.NuevoRequerimientoViewModel
+
 
 @Composable
 fun NuevoRequerimientoScreen(
@@ -54,6 +62,15 @@ fun NuevoRequerimientoScreen(
     var mostrarFecha by remember { mutableStateOf(false) }
     var mostrarHora by remember { mutableStateOf(false) }
     var mostrarAyuda by remember { mutableStateOf(false) }
+    var photoBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        if (bitmap != null) {
+            photoBitmap = bitmap
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -243,7 +260,7 @@ fun NuevoRequerimientoScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 OutlinedButton(
-                    onClick = viewModel::onAdjuntarEvidencia,
+                    onClick = { cameraLauncher.launch(null) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
@@ -253,14 +270,36 @@ fun NuevoRequerimientoScreen(
                     Spacer(Modifier.width(8.dp))
                     Text("Adjuntar con cámara")
                 }
-                if (state.evidencia != null) {
-                    EvidenciaItem(state.evidencia!!, viewModel::onQuitarEvidencia)
+                
+                photoBitmap?.let { bitmap ->
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Image(
+                            bitmap = bitmap.asImageBitmap(),
+                            contentDescription = "Evidencia fotográfica adjunta",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                        )
+                        
+                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        IconButton(
+                            onClick = { photoBitmap = null }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = "Eliminar foto",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
                 }
-                Text(
-                    text = "Captura simulada · no activa la cámara.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
             }
 
             // Aviso de emergencia
@@ -510,57 +549,6 @@ private fun descripcionPrioridad(prioridad: String): String = when (prioridad) {
     else -> "Media: afecta el uso del espacio, sin riesgo inmediato. La prioridad será validada por el equipo."
 }
 
-// Tarjeta de la evidencia adjunta
-@Composable
-private fun EvidenciaItem(evidencia: Evidencia, onQuitar: () -> Unit) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Image,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Evidencia fotográfica",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = evidencia.nombre,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = evidencia.detalle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            IconButton(onClick = onQuitar) {
-                Icon(Icons.Filled.Close, contentDescription = "Quitar evidencia")
-            }
-        }
-    }
-}
 
 // Calendario para elegir la fecha
 @OptIn(ExperimentalMaterial3Api::class)
