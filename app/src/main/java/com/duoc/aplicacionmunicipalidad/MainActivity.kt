@@ -31,6 +31,7 @@ import com.duoc.aplicacionmunicipalidad.view.NuevoRequerimientoScreen
 import com.duoc.aplicacionmunicipalidad.view.ProfileScreen
 import com.duoc.aplicacionmunicipalidad.view.RegisterScreen
 import com.duoc.aplicacionmunicipalidad.view.SeguimientoScreen
+import com.duoc.aplicacionmunicipalidad.view.AyudaScreen
 import com.duoc.aplicacionmunicipalidad.viewmodel.SesionViewModel
 
 class MainActivity : ComponentActivity() {
@@ -93,14 +94,22 @@ class MainActivity : ComponentActivity() {
                                     onPerfilClick = { navController.navigate("perfil") },
                                     onNuevoRequerimientoClick = { navController.navigate("nuevo") },
                                     onMisCasosClick = { navController.navigate("casos") },
-                                    onAyudaClick = { /* TODO: pantalla "Ayuda" */ }
+                                    onAyudaClick = { navController.navigate("ayuda") }
                                 )
                             }
                             composable("casos") {
                                 MisCasosScreen(
                                     onRequerimientoClick = abrirRequerimiento,
                                     onInicioClick = { navController.popBackStack("home", false) },
-                                    onAyudaClick = { /* TODO: pantalla "Ayuda" */ },
+                                    onAyudaClick = { navController.navigate("ayuda") },
+                                    onPerfilClick = { navController.navigate("perfil") }
+                                )
+                            }
+                            composable("ayuda") {
+                                AyudaScreen(
+                                    onInicioClick = { navController.popBackStack("home", false) },
+                                    onCasosClick = { navController.navigate("casos") },
+                                    onAyudaClick = { }, // ya está en ayuda
                                     onPerfilClick = { navController.navigate("perfil") }
                                 )
                             }
