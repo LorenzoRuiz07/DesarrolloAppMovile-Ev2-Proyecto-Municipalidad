@@ -23,6 +23,7 @@ import androidx.navigation.navArgument
 import com.duoc.aplicacionmunicipalidad.model.Requerimiento
 import com.duoc.aplicacionmunicipalidad.model.SesionUsuario
 import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme
+import com.duoc.aplicacionmunicipalidad.view.AyudaScreen
 import com.duoc.aplicacionmunicipalidad.view.GestionScreen
 import com.duoc.aplicacionmunicipalidad.view.HomeScreen
 import com.duoc.aplicacionmunicipalidad.view.LoginScreen
@@ -31,7 +32,6 @@ import com.duoc.aplicacionmunicipalidad.view.NuevoRequerimientoScreen
 import com.duoc.aplicacionmunicipalidad.view.ProfileScreen
 import com.duoc.aplicacionmunicipalidad.view.RegisterScreen
 import com.duoc.aplicacionmunicipalidad.view.SeguimientoScreen
-import com.duoc.aplicacionmunicipalidad.view.AyudaScreen
 import com.duoc.aplicacionmunicipalidad.viewmodel.SesionViewModel
 
 class MainActivity : ComponentActivity() {
@@ -73,8 +73,8 @@ class MainActivity : ComponentActivity() {
                         ) {
                             composable("login") {
                                 LoginScreen(
-                                    onLoginSuccess = { perfil ->
-                                        sesionViewModel.iniciarSesion(perfil)   // guarda la sesión en Room
+                                    onLoginSuccess = { perfil, usuario ->
+                                        sesionViewModel.iniciarSesion(perfil, usuario)   // guarda la sesión en Room
                                         navController.navigate("home") {
                                             popUpTo("login") { inclusive = true }
                                         }

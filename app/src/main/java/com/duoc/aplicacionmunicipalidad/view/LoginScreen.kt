@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.duoc.aplicacionmunicipalidad.model.Usuario
 import com.duoc.aplicacionmunicipalidad.viewmodel.LoginState
 import com.duoc.aplicacionmunicipalidad.viewmodel.LoginViewModel
 
@@ -24,7 +25,7 @@ import com.duoc.aplicacionmunicipalidad.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    onLoginSuccess: (String) -> Unit, // Función que se ejecuta cuando el login es exitoso
+    onLoginSuccess: (String, Usuario) -> Unit, // Función que se ejecuta cuando el login es exitoso
     onForgotPasswordClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {}
 ) {
@@ -41,9 +42,8 @@ fun LoginScreen(
     // Efecto secundario: Cuando el estado cambia a Success, ejecutamos la navegación
     LaunchedEffect(loginState) {
         if (loginState is LoginState.Success) {
-            // Obtenemos el perfil y llamamos a la función de éxito
-            val profile = (loginState as LoginState.Success).userProfile
-            onLoginSuccess(profile)
+            val successState = loginState as LoginState.Success
+            onLoginSuccess(successState.userProfile, successState.usuario)
 
             // Opcional: Reiniciamos el estado del login al salir de esta pantalla
             viewModel.resetState()
@@ -92,7 +92,6 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             shape = RoundedCornerShape(50),
-            // Corrección para Material 3
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = primaryGreen,
                 focusedLabelColor = primaryGreen
@@ -105,11 +104,10 @@ fun LoginScreen(
             value = password,
             onValueChange = { password = it },
             label = { Text("Contraseña") },
-            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Contraseña") }, // Corrección de ícono
+            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = "Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(50),
-            // Corrección para Material 3
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = primaryGreen,
                 focusedLabelColor = primaryGreen
