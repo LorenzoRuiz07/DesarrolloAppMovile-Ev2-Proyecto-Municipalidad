@@ -3,9 +3,10 @@ package com.duoc.aplicacionmunicipalidad.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.duoc.aplicacionmunicipalidad.model.Requerimiento
+import com.duoc.aplicacionmunicipalidad.model.SesionUsuario
+import com.duoc.aplicacionmunicipalidad.remote.NuevoRequerimientoSolicitud
 import com.duoc.aplicacionmunicipalidad.repository.RequerimientoRepository
-import kotlinx.coroutines.delay
+import com.duoc.aplicacionmunicipalidad.repository.mensajeDeError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -131,26 +132,24 @@ class NuevoRequerimientoViewModel(
 
 
         viewModelScope.launch {
-            delay(1200)
-            val id = repository.generarId()
-            repository.agregar(
-                Requerimiento(
-                    id = id,
-                    titulo = "${s.tipo} en ${s.lugar.trim()}",
-                    lugar = s.lugar.trim(),
-                    sector = "San Joaquín",
-                    categoria = s.categoria,
-                    prioridad = s.prioridad,
-                    estado = "Recibido",
-                    fechaMillis = s.fechaMillis,
-                    tipo = s.tipo,
-                    descripcion = s.descripcion.trim(),
-                    evidenciaNombre = s.evidencia?.nombre ?: "",
-                    evidenciaDetalle = s.evidencia?.detalle ?: "",
-                    esMio = true
+            try {
+                val creado = repository.crear(
+                    NuevoRequerimientoSolicitud(
+                        categoria = s.categoria,
+                        tipo = s.tipo,
+                        lugar = s.lugar.trim(),
+                        descripcion = s.descripcion.trim(),
+                        prioridad = s.prioridad,
+                        fechaMillis = s.fechaMillis,
+                        rutUsuario = SesionUsuario.perfilUsuarioActual?.rut.orEmpty(),
+                        evidenciaNombre = s.evidencia?.nombre.orEmpty(),
+                        evidenciaDetalle = s.evidencia?.detalle.orEmpty()
+                    )
                 )
-            )
-            _uiState.update { it.copy(enviando = false, idEnviado = id) }
+                _uiState.update { it.copy(enviando = false, idEnviado = creado.id) }
+            } catch (error: Exception) {
+                _uiState.update { it.copy(enviando = false, error = mensajeDeError(error)) }
+            }
         }
     }
 

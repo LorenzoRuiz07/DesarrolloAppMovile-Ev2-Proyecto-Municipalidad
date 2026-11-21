@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.duoc.aplicacionmunicipalidad.model.Requerimiento
 import com.duoc.aplicacionmunicipalidad.model.SesionUsuario
 import com.duoc.aplicacionmunicipalidad.repository.RequerimientoRepository
+import com.duoc.aplicacionmunicipalidad.repository.mensajeDeError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +15,9 @@ import kotlinx.coroutines.launch
 data class MisCasosUiState(
     val filtro: String = "Todos",            // Todos, En curso o Resueltos
     val esFuncionario: Boolean = false,
-    val requerimientos: List<Requerimiento> = emptyList()
+    val requerimientos: List<Requerimiento> = emptyList(),
+    val cargando: Boolean = false,
+    val error: String? = null
 ) {
     val visibles: List<Requerimiento>
         get() = requerimientos
@@ -29,23 +32,24 @@ data class MisCasosUiState(
 }
 
 class MisCasosViewModel(
-    repository: RequerimientoRepository = RequerimientoRepository()
+    private val repository: RequerimientoRepository = RequerimientoRepository()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MisCasosUiState())
     val uiState: StateFlow<MisCasosUiState> = _uiState.asStateFlow()
 
-    init {
+    // El residente descarga solo lo suyo; el funcionario descarga todos los casos
+    fun cargar() {
+        val funcionario = SesionUsuario.esFuncionario
+        val rutResidente = SesionUsuario.perfilUsuarioActual?.rut
+        _uiState.update { it.copy(esFuncionario = funcionario, cargando = true, error = null) }
+
         viewModelScope.launch {
-            repository.requerimientos.collect { lista ->
-                val funcionario = SesionUsuario.esFuncionario
-                _uiState.update {
-                    it.copy(
-                        esFuncionario = funcionario,
-                        // El residente ve solo lo suyo; el funcionario ve todos los casos
-                        requerimientos = if (funcionario) lista else lista.filter { r -> r.esMio }
-                    )
-                }
+            try {
+                val lista = repository.listar(if (funcionario) null else rutResidente)
+                _uiState.update { it.copy(requerimientos = lista, cargando = false) }
+            } catch (error: Exception) {
+                _uiState.update { it.copy(cargando = false, error = mensajeDeError(error)) }
             }
         }
     }

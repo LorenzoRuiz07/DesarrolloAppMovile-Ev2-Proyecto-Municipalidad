@@ -1,13 +1,10 @@
 package com.duoc.aplicacionmunicipalidad.viewmodel
 
-import android.app.Application
-import android.util.Patterns
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.duoc.aplicacionmunicipalidad.model.AppDatabase
-import com.duoc.aplicacionmunicipalidad.model.Usuario
+import com.duoc.aplicacionmunicipalidad.remote.RegistroSolicitud
 import com.duoc.aplicacionmunicipalidad.repository.UsuarioRepository
-import kotlinx.coroutines.delay
+import com.duoc.aplicacionmunicipalidad.repository.mensajeDeError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,11 +17,11 @@ sealed class RegisterState {
     data class Error(val message: String) : RegisterState()
 }
 
-class RegisterViewModel(application: Application) : AndroidViewModel(application) {
+class RegisterViewModel(
+    private val usuarioRepository: UsuarioRepository = UsuarioRepository()
+) : ViewModel() {
 
-    private val usuarioRepository = UsuarioRepository(
-        AppDatabase.obtener(application).usuarioDao()
-    )
+    private val formatoCorreo = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
 
     private val _registerState = MutableStateFlow<RegisterState>(RegisterState.Idle)
     val registerState: StateFlow<RegisterState> = _registerState.asStateFlow()
@@ -50,25 +47,21 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
         _registerState.value = RegisterState.Loading
 
         viewModelScope.launch {
-            delay(500)
-            val existe = usuarioRepository.obtenerPorRut(rut.trim())
-            if (existe != null) {
-                _registerState.value = RegisterState.Error("Ya existe un usuario registrado con este RUT.")
-                return@launch
+            try {
+                usuarioRepository.registrar(
+                    RegistroSolicitud(
+                        rut = rut.trim(),
+                        nombre = nombre.trim(),
+                        correo = correo.trim(),
+                        telefono = telefono.trim(),
+                        direccion = direccion.trim(),
+                        password = password
+                    )
+                )
+                _registerState.value = RegisterState.Success
+            } catch (error: Exception) {
+                _registerState.value = RegisterState.Error(mensajeDeError(error))
             }
-
-            val nuevoUsuario = Usuario(
-                rut = rut.trim(),
-                nombre = nombre.trim(),
-                correo = correo.trim(),
-                telefono = telefono.trim(),
-                direccion = direccion.trim(),
-                password = password,
-                tipoPerfil = "Residente"
-            )
-
-            usuarioRepository.guardarUsuario(nuevoUsuario)
-            _registerState.value = RegisterState.Success
         }
     }
 
@@ -93,7 +86,7 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
         if (!rutValido(rut)) {
             return "El RUT no es válido. Ejemplo: 12.345.678-5"
         }
-        if (!Patterns.EMAIL_ADDRESS.matcher(correo.trim()).matches()) {
+        if (!formatoCorreo.matches(correo.trim())) {
             return "El correo electrónico no es válido."
         }
         if (telefono.isNotBlank()) {

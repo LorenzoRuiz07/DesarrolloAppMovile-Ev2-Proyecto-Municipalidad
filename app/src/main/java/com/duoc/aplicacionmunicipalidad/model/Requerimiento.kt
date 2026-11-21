@@ -16,11 +16,13 @@ data class Requerimiento(
     val descripcion: String = "",
     val evidenciaNombre: String = "",
     val evidenciaDetalle: String = "",
-    val esMio: Boolean = false,
+    val rutUsuario: String = "",
     val unidad: String = "",
     val derivadoA: String = "",
     val observacion: String = "",
-    val observacionVisible: Boolean = false
+    val observacionVisible: Boolean = false,
+    val latitud: Double? = null,
+    val longitud: Double? = null
 ) {
 
     val fechaFormateada: String

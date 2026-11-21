@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.duoc.aplicacionmunicipalidad.model.Usuario
+import com.duoc.aplicacionmunicipalidad.model.PerfilUsuario
 import com.duoc.aplicacionmunicipalidad.viewmodel.LoginState
 import com.duoc.aplicacionmunicipalidad.viewmodel.LoginViewModel
 
@@ -25,7 +25,7 @@ import com.duoc.aplicacionmunicipalidad.viewmodel.LoginViewModel
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
-    onLoginSuccess: (String, Usuario) -> Unit, // Función que se ejecuta cuando el login es exitoso
+    onLoginSuccess: (String, PerfilUsuario) -> Unit, // Función que se ejecuta cuando el login es exitoso
     onForgotPasswordClick: () -> Unit = {},
     onRegisterClick: () -> Unit = {}
 ) {

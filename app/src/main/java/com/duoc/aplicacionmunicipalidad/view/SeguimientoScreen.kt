@@ -101,7 +101,12 @@ fun SeguimientoScreen(
             }
         }
 
-        if (r == null) {
+        if (state.cargando) {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(40.dp),
+                contentAlignment = Alignment.Center
+            ) { CircularProgressIndicator() }
+        } else if (r == null) {
             Text(
                 text = "No encontramos este requerimiento.",
                 style = MaterialTheme.typography.bodyMedium,

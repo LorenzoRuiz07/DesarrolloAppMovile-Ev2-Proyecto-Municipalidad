@@ -8,9 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.duoc.aplicacionmunicipalidad.model.AppDatabase
 import com.duoc.aplicacionmunicipalidad.model.PerfilUsuario
 import com.duoc.aplicacionmunicipalidad.model.SesionUsuario
-import com.duoc.aplicacionmunicipalidad.model.Usuario
 import com.duoc.aplicacionmunicipalidad.repository.SesionRepository
 import com.duoc.aplicacionmunicipalidad.repository.UsuarioRepository
+import com.duoc.aplicacionmunicipalidad.repository.mensajeDeError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,14 +22,16 @@ import java.io.FileOutputStream
 data class ProfileUiState(
     val perfil: PerfilUsuario,
     val notificaciones: Boolean = true,
-    val mostrarDialogoSalir: Boolean = false
+    val mostrarDialogoSalir: Boolean = false,
+    val mensaje: String? = null
 )
 
-class ProfileViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val database = AppDatabase.obtener(application)
-    private val usuarioRepository = UsuarioRepository(database.usuarioDao())
-    private val sesionRepository = SesionRepository(database.sesionDao())
+class ProfileViewModel @JvmOverloads constructor(
+    application: Application,
+    private val usuarioRepository: UsuarioRepository = UsuarioRepository(),
+    private val sesionRepository: SesionRepository =
+        SesionRepository(AppDatabase.obtener(application).sesionDao())
+) : AndroidViewModel(application) {
 
     private val defaultPerfil = PerfilUsuario(
         nombre = "María Pérez Soto",
@@ -54,59 +56,42 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     fun onDialogoDismiss() = _uiState.update { it.copy(mostrarDialogoSalir = false) }
 
+    fun onMensajeMostrado() = _uiState.update { it.copy(mensaje = null) }
+
+    // El RUT identifica al usuario en el servidor, por eso no se puede cambiar
     fun onGuardarPerfil(
         nombre: String,
-        rut: String,
         correo: String,
         telefono: String,
         direccion: String
     ) {
-        val rutOriginal = _uiState.value.perfil.rut
-        val fotoPerfilActual = _uiState.value.perfil.fotoPerfil
-        val fotoPerfilPath = if (fotoPerfilActual is String) fotoPerfilActual else null
-
-        val nuevoPerfil = _uiState.value.perfil.copy(
-            nombre = nombre,
-            rut = rut,
-            correo = correo,
-            telefono = telefono,
-            direccion = direccion
-        )
-        SesionUsuario.perfilUsuarioActual = nuevoPerfil
-        _uiState.update { it.copy(perfil = nuevoPerfil) }
+        val perfilActual = _uiState.value.perfil
 
         viewModelScope.launch {
-            val usuarioActual = usuarioRepository.obtenerPorRut(rutOriginal)
-            val password = usuarioActual?.password ?: "1234"
-            val nuevoUsuario = Usuario(
-                rut = rut,
-                nombre = nombre,
-                correo = correo,
-                telefono = telefono,
-                direccion = direccion,
-                password = password,
-                tipoPerfil = nuevoPerfil.tipoPerfil,
-                fotoPerfilPath = fotoPerfilPath
-            )
-            usuarioRepository.actualizarPerfilUsuario(rutOriginal, nuevoUsuario)
-            sesionRepository.guardar(perfil = nuevoPerfil.tipoPerfil, usuarioRut = rut)
+            try {
+                val actualizado = usuarioRepository.actualizar(
+                    rut = perfilActual.rut,
+                    nombre = nombre.trim(),
+                    correo = correo.trim(),
+                    telefono = telefono.trim(),
+                    direccion = direccion.trim()
+                ).copy(fotoPerfil = perfilActual.fotoPerfil)
+
+                SesionUsuario.perfilUsuarioActual = actualizado
+                _uiState.update { it.copy(perfil = actualizado, mensaje = "Perfil actualizado.") }
+            } catch (error: Exception) {
+                _uiState.update { it.copy(mensaje = mensajeDeError(error)) }
+            }
         }
     }
 
     fun onActualizarFoto(foto: Any?) {
-        val pathFoto = guardarFotoLocal(foto)
-        val nuevoPerfil = _uiState.value.perfil.copy(fotoPerfil = pathFoto)
+        val rutaFoto = guardarFotoLocal(foto)
+        val nuevoPerfil = _uiState.value.perfil.copy(fotoPerfil = rutaFoto)
         SesionUsuario.perfilUsuarioActual = nuevoPerfil
         _uiState.update { it.copy(perfil = nuevoPerfil) }
 
-        val rutActual = nuevoPerfil.rut
-        viewModelScope.launch {
-            val usuarioActual = usuarioRepository.obtenerPorRut(rutActual)
-            if (usuarioActual != null) {
-                val actualizado = usuarioActual.copy(fotoPerfilPath = pathFoto)
-                usuarioRepository.guardarUsuario(actualizado)
-            }
-        }
+        viewModelScope.launch { sesionRepository.guardarFoto(rutaFoto) }
     }
 
     private fun guardarFotoLocal(foto: Any?): String? {

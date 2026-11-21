@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.duoc.aplicacionmunicipalidad.model.Requerimiento
 import com.duoc.aplicacionmunicipalidad.repository.RequerimientoRepository
+import com.duoc.aplicacionmunicipalidad.repository.mensajeDeError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,7 +17,9 @@ data class HomeUiState(
     val filtroEstado: String? = null,
     val filtroCategoria: String? = null,
     val filtroPrioridad: String? = null,
-    val requerimientos: List<Requerimiento> = emptyList()
+    val requerimientos: List<Requerimiento> = emptyList(),
+    val cargando: Boolean = false,
+    val error: String? = null
 ) {
 
     val visibles: List<Requerimiento>
@@ -41,11 +44,15 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    init {
-
+    // Descarga los requerimientos del servidor; la pantalla lo llama cada vez que se abre
+    fun cargar() {
+        _uiState.update { it.copy(cargando = true, error = null) }
         viewModelScope.launch {
-            repository.requerimientos.collect { lista ->
-                _uiState.update { it.copy(requerimientos = lista) }
+            try {
+                val lista = repository.listar()
+                _uiState.update { it.copy(requerimientos = lista, cargando = false) }
+            } catch (error: Exception) {
+                _uiState.update { it.copy(cargando = false, error = mensajeDeError(error)) }
             }
         }
     }

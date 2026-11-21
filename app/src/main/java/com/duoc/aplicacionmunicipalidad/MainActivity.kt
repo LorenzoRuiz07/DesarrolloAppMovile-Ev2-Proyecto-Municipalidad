@@ -30,6 +30,7 @@ import com.duoc.aplicacionmunicipalidad.view.LoginScreen
 import com.duoc.aplicacionmunicipalidad.view.MisCasosScreen
 import com.duoc.aplicacionmunicipalidad.view.NuevoRequerimientoScreen
 import com.duoc.aplicacionmunicipalidad.view.ProfileScreen
+import com.duoc.aplicacionmunicipalidad.view.PuntosSeguridadScreen
 import com.duoc.aplicacionmunicipalidad.view.RegisterScreen
 import com.duoc.aplicacionmunicipalidad.view.SeguimientoScreen
 import com.duoc.aplicacionmunicipalidad.viewmodel.SesionViewModel
@@ -94,8 +95,12 @@ class MainActivity : ComponentActivity() {
                                     onPerfilClick = { navController.navigate("perfil") },
                                     onNuevoRequerimientoClick = { navController.navigate("nuevo") },
                                     onMisCasosClick = { navController.navigate("casos") },
-                                    onAyudaClick = { navController.navigate("ayuda") }
+                                    onAyudaClick = { navController.navigate("ayuda") },
+                                    onPuntosSeguridadClick = { navController.navigate("puntos") }
                                 )
+                            }
+                            composable("puntos") {
+                                PuntosSeguridadScreen(onBackClick = { navController.popBackStack() })
                             }
                             composable("casos") {
                                 MisCasosScreen(

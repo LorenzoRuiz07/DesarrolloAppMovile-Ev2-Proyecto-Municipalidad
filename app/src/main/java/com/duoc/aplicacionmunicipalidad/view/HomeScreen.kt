@@ -38,6 +38,7 @@ import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.PersonOutline
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -48,6 +49,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,7 +80,6 @@ import com.duoc.aplicacionmunicipalidad.model.ESTADOS
 import com.duoc.aplicacionmunicipalidad.model.PRIORIDADES
 import com.duoc.aplicacionmunicipalidad.model.Requerimiento
 import com.duoc.aplicacionmunicipalidad.model.SesionUsuario
-import com.duoc.aplicacionmunicipalidad.repository.RequerimientoRepository
 import com.duoc.aplicacionmunicipalidad.ui.theme.MapaCalle
 import com.duoc.aplicacionmunicipalidad.ui.theme.MapaFondo
 import com.duoc.aplicacionmunicipalidad.ui.theme.MapaZona
@@ -94,9 +95,13 @@ fun HomeScreen(
     onPerfilClick: () -> Unit = {},
     onNuevoRequerimientoClick: () -> Unit = {},
     onMisCasosClick: () -> Unit = {},
-    onAyudaClick: () -> Unit = {}
+    onAyudaClick: () -> Unit = {},
+    onPuntosSeguridadClick: () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    // Cada vez que se abre el inicio se vuelve a pedir la lista al servidor
+    LaunchedEffect(Unit) { viewModel.cargar() }
 
     HomeContent(
         state = state,
@@ -110,7 +115,8 @@ fun HomeScreen(
         onPerfilClick = onPerfilClick,
         onNuevoRequerimientoClick = onNuevoRequerimientoClick,
         onMisCasosClick = onMisCasosClick,
-        onAyudaClick = onAyudaClick
+        onAyudaClick = onAyudaClick,
+        onPuntosSeguridadClick = onPuntosSeguridadClick
     )
 }
 
@@ -127,7 +133,8 @@ fun HomeContent(
     onPerfilClick: () -> Unit,
     onNuevoRequerimientoClick: () -> Unit,
     onMisCasosClick: () -> Unit,
-    onAyudaClick: () -> Unit
+    onAyudaClick: () -> Unit,
+    onPuntosSeguridadClick: () -> Unit = {}
 ) {
     val visibles = state.visibles
 
@@ -195,6 +202,15 @@ fun HomeContent(
                 )
             }
 
+            item {
+                androidx.compose.material3.OutlinedButton(
+                    onClick = onPuntosSeguridadClick,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Ver puntos de seguridad cercanos")
+                }
+            }
+
             item { CampoBusqueda(state.consulta, onConsultaChange) }
 
             item { SelectorVista(state.verMapa, onVerMapaChange) }
@@ -248,7 +264,23 @@ fun HomeContent(
                     }
                 }
 
-                if (visibles.isEmpty()) {
+                if (state.cargando) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) { CircularProgressIndicator() }
+                    }
+                } else if (state.error != null) {
+                    item {
+                        Text(
+                            text = state.error!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(vertical = 16.dp)
+                        )
+                    }
+                } else if (visibles.isEmpty()) {
                     item {
                         Text(
                             text = "No hay requerimientos que coincidan con tu búsqueda.",
@@ -754,9 +786,7 @@ private fun EstadoChip(estado: String) {
 private fun HomeScreenPreview() {
     BasicoTheme {
         HomeContent(
-            state = HomeUiState(
-                requerimientos = RequerimientoRepository().obtenerRequerimientos()
-            ),
+            state = HomeUiState(),
             onConsultaChange = {},
             onVerMapaChange = {},
             onEstadoChange = {},

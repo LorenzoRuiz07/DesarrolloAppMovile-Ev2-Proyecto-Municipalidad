@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -28,6 +30,9 @@ fun MisCasosScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val visibles = state.visibles
+
+    // Cada vez que se abre la pantalla se vuelve a pedir la lista al servidor
+    LaunchedEffect(Unit) { viewModel.cargar() }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -88,7 +93,23 @@ fun MisCasosScreen(
                 )
             }
 
-            if (visibles.isEmpty()) {
+            if (state.cargando) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) { CircularProgressIndicator() }
+                }
+            } else if (state.error != null) {
+                item {
+                    Text(
+                        text = state.error!!,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(vertical = 16.dp)
+                    )
+                }
+            } else if (visibles.isEmpty()) {
                 item {
                     Text(
                         text = "Aún no hay requerimientos en esta lista.",

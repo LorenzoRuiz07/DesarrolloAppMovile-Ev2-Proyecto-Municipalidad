@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +56,15 @@ fun ProfileScreen(
     var mostrarDialogoEditar by remember { mutableStateOf(false) }
     var mostrarOpcionesFoto by remember { mutableStateOf(false) }
     var fotoTemporal by remember { mutableStateOf<Any?>(null) }
+    val contexto = androidx.compose.ui.platform.LocalContext.current
+
+    // Muestra el resultado de guardar el perfil (éxito o error del servidor)
+    LaunchedEffect(state.mensaje) {
+        state.mensaje?.let {
+            android.widget.Toast.makeText(contexto, it, android.widget.Toast.LENGTH_SHORT).show()
+            viewModel.onMensajeMostrado()
+        }
+    }
     var mostrarConfirmacion by remember { mutableStateOf(false) }
 
     val primaryGreen = Color(0xFF00796B)
@@ -315,8 +325,8 @@ fun ProfileScreen(
         DialogoEditarPerfil(
             perfilInicial = perfil,
             onDismiss = { mostrarDialogoEditar = false },
-            onGuardar = { nombre, rut, correo, telefono, direccion ->
-                viewModel.onGuardarPerfil(nombre, rut, correo, telefono, direccion)
+            onGuardar = { nombre, correo, telefono, direccion ->
+                viewModel.onGuardarPerfil(nombre, correo, telefono, direccion)
                 mostrarDialogoEditar = false
             }
         )
@@ -405,10 +415,10 @@ fun ProfileScreen(
 private fun DialogoEditarPerfil(
     perfilInicial: com.duoc.aplicacionmunicipalidad.model.PerfilUsuario,
     onDismiss: () -> Unit,
-    onGuardar: (String, String, String, String, String) -> Unit
+    onGuardar: (String, String, String, String) -> Unit
 ) {
     var nombre by remember { mutableStateOf(perfilInicial.nombre) }
-    var rut by remember { mutableStateOf(perfilInicial.rut) }
+    val rut = perfilInicial.rut
     var correo by remember { mutableStateOf(perfilInicial.correo) }
     var telefono by remember { mutableStateOf(perfilInicial.telefono) }
     var direccion by remember { mutableStateOf(perfilInicial.direccion) }
@@ -432,8 +442,9 @@ private fun DialogoEditarPerfil(
                 )
                 OutlinedTextField(
                     value = rut,
-                    onValueChange = { rut = it },
+                    onValueChange = { },
                     label = { Text("RUT") },
+                    enabled = false,
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -463,7 +474,7 @@ private fun DialogoEditarPerfil(
         confirmButton = {
             TextButton(
                 onClick = {
-                    onGuardar(nombre, rut, correo, telefono, direccion)
+                    onGuardar(nombre, correo, telefono, direccion)
                 }
             ) {
                 Text("Guardar")

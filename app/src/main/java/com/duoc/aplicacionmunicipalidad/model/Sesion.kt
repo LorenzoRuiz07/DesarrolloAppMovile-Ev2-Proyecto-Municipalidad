@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class Sesion(
     @PrimaryKey val id: Int = 1,
     val perfil: String,
-    val usuarioRut: String? = null
+    val usuarioRut: String? = null,
+    val fotoPerfilPath: String? = null   // la foto de perfil se guarda solo en el teléfono
 )

@@ -49,6 +49,12 @@ fun GestionScreen(
     LaunchedEffect(idRequerimiento) { viewModel.cargar(idRequerimiento) }
 
     val state by viewModel.uiState.collectAsState()
+    var confirmarEliminar by remember { mutableStateOf(false) }
+
+    // Cuando el servidor confirma que se eliminó, se vuelve a la lista
+    LaunchedEffect(state.eliminado) {
+        if (state.eliminado) onBackClick()
+    }
     val r = state.requerimiento
     val context = LocalContext.current
     var menuAbierto by remember { mutableStateOf(false) }
@@ -103,7 +109,12 @@ fun GestionScreen(
             }
         }
 
-        if (r == null) {
+        if (state.cargando) {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(40.dp),
+                contentAlignment = Alignment.Center
+            ) { CircularProgressIndicator() }
+        } else if (r == null) {
             Text(
                 text = "No encontramos este requerimiento.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -422,6 +433,18 @@ fun GestionScreen(
                             Text("Guardar cambios", fontWeight = FontWeight.Medium)
                         }
 
+                        if (SesionUsuario.perfil == "Administrador") {
+                            OutlinedButton(
+                                onClick = { confirmarEliminar = true },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(52.dp),
+                                shape = CircleShape
+                            ) {
+                                Text("Eliminar requerimiento", color = Color.Red)
+                            }
+                        }
+
                         Text(
                             text = "El estado actual se mantiene hasta confirmar. " +
                                     if (state.visibleParaResidente) "El residente verá la observación de gestión."
@@ -459,5 +482,22 @@ fun GestionScreen(
                 )
             }
         }
+    }
+
+    if (confirmarEliminar) {
+        AlertDialog(
+            onDismissRequest = { confirmarEliminar = false },
+            title = { Text("Eliminar requerimiento") },
+            text = { Text("Se borrará este requerimiento del sistema. Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmarEliminar = false
+                    viewModel.eliminar()
+                }) { Text("Eliminar", color = Color.Red) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmarEliminar = false }) { Text("Cancelar") }
+            }
+        )
     }
 }
