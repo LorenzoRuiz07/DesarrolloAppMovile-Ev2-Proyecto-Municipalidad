@@ -1,52 +1,30 @@
 package com.duoc.aplicacionmunicipalidad.repository
 
 import com.duoc.aplicacionmunicipalidad.model.PuntoSeguridad
-import com.duoc.aplicacionmunicipalidad.remote.ElementoOsm
-import com.duoc.aplicacionmunicipalidad.remote.OverpassApi
-import com.duoc.aplicacionmunicipalidad.remote.OverpassClient
+import com.duoc.aplicacionmunicipalidad.remote.PuntoSeguridadRespuesta
+import com.duoc.aplicacionmunicipalidad.remote.XanoApi
+import com.duoc.aplicacionmunicipalidad.remote.XanoClient
 
-/** Busca en OpenStreetMap los puntos de seguridad cercanos al centro de San Joaquín. */
+/** Obtiene desde la API de Xano los puntos de seguridad de la comuna. */
 class PuntosSeguridadRepository(
-    private val api: OverpassApi = OverpassClient.api
+    private val api: XanoApi = XanoClient.api
 ) {
 
-    companion object {
-        private const val LATITUD_CENTRO = -33.4975
-        private const val LONGITUD_CENTRO = -70.6240
-        private const val RADIO_METROS = 2500
-
-        // Comisarías, cuarteles de bomberos, hospitales y consultorios dentro del radio
-        val CONSULTA = "[out:json][timeout:25];" +
-                "nwr[\"amenity\"~\"police|fire_station|hospital|clinic\"]" +
-                "(around:$RADIO_METROS,$LATITUD_CENTRO,$LONGITUD_CENTRO);" +
-                "out center 80;"
-    }
-
     suspend fun obtenerPuntos(): List<PuntoSeguridad> =
-        api.buscar(CONSULTA).elements.orEmpty()
+        api.obtenerPuntosSeguridad()
             .mapNotNull { aPuntoSeguridad(it) }
             .sortedWith(compareBy({ it.tipo }, { it.nombre }))
 
-    // Descarta los elementos sin ubicación o de un tipo que no nos interesa
-    private fun aPuntoSeguridad(elemento: ElementoOsm): PuntoSeguridad? {
-        val etiquetas = elemento.tags ?: return null
-        val tipo = when (etiquetas["amenity"]) {
-            "police" -> "Carabineros"
-            "fire_station" -> "Bomberos"
-            "hospital", "clinic" -> "Salud"
-            else -> return null
-        }
-        val latitud = elemento.lat ?: elemento.center?.lat ?: return null
-        val longitud = elemento.lon ?: elemento.center?.lon ?: return null
-
-        val calle = etiquetas["addr:street"].orEmpty()
-        val numero = etiquetas["addr:housenumber"].orEmpty()
+    // Descarta los registros que no tienen ubicación, porque no se podrían mostrar en el mapa
+    private fun aPuntoSeguridad(respuesta: PuntoSeguridadRespuesta): PuntoSeguridad? {
+        val latitud = respuesta.latitud ?: return null
+        val longitud = respuesta.longitud ?: return null
 
         return PuntoSeguridad(
-            id = elemento.id ?: 0L,
-            nombre = etiquetas["name"] ?: "$tipo (sin nombre registrado)",
-            tipo = tipo,
-            direccion = "$calle $numero".trim().ifBlank { "Dirección no registrada" },
+            id = respuesta.id ?: 0L,
+            nombre = respuesta.nombre.orEmpty().ifBlank { "Punto sin nombre" },
+            tipo = respuesta.tipo.orEmpty().ifBlank { "Otros" },
+            direccion = respuesta.direccion.orEmpty().ifBlank { "Dirección no registrada" },
             latitud = latitud,
             longitud = longitud
         )

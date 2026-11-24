@@ -82,7 +82,7 @@ fun PuntosSeguridadScreen(
 
         Text(
             text = "Carabineros, bomberos y centros de salud cerca de San Joaquín. " +
-                    "Datos de OpenStreetMap.",
+                    "Datos entregados por la API de la municipalidad.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
