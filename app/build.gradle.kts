@@ -22,8 +22,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file("keystore/municipalidad.jks")
+            storePassword = "municipalidad123"
+            keyAlias = "municipalidad"
+            keyPassword = "municipalidad123"
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = false
             }
@@ -55,6 +65,11 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     testImplementation(libs.junit)
+    testImplementation(libs.junit)
+    testImplementation("io.mockk:mockk:1.14.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+    testImplementation("com.squareup.okhttp3:okhttp:4.12.0")
+    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -80,6 +80,7 @@ import com.duoc.aplicacionmunicipalidad.model.ESTADOS
 import com.duoc.aplicacionmunicipalidad.model.PRIORIDADES
 import com.duoc.aplicacionmunicipalidad.model.Requerimiento
 import com.duoc.aplicacionmunicipalidad.model.SesionUsuario
+import com.duoc.aplicacionmunicipalidad.ui.theme.AplicacionMuniSanJoaquinTheme
 import com.duoc.aplicacionmunicipalidad.ui.theme.MapaCalle
 import com.duoc.aplicacionmunicipalidad.ui.theme.MapaFondo
 import com.duoc.aplicacionmunicipalidad.ui.theme.MapaZona
@@ -227,7 +228,6 @@ fun HomeContent(
             }
 
             if (state.verMapa) {
-                // TODO: reemplazar por GoogleMaps() con marcadores de los requerimientos visibles
                 item {
                     MapaReferencial(
                         modifier = Modifier
@@ -784,7 +784,7 @@ private fun EstadoChip(estado: String) {
 @Preview(showBackground = true, widthDp = 412, heightDp = 860)
 @Composable
 private fun HomeScreenPreview() {
-    BasicoTheme {
+    AplicacionMuniSanJoaquinTheme{
         HomeContent(
             state = HomeUiState(),
             onConsultaChange = {},
@@ -802,7 +802,3 @@ private fun HomeScreenPreview() {
     }
 }
 
-@Composable
-fun BasicoTheme(content: @Composable () -> Unit) {
-    TODO("Not yet implemented")
-}
