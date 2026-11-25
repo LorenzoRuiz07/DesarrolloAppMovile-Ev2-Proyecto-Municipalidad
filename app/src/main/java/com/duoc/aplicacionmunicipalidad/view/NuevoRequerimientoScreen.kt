@@ -33,13 +33,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import android.graphics.Bitmap
+import android.Manifest
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.duoc.aplicacionmunicipalidad.util.obtenerUbicacionActual
 import com.duoc.aplicacionmunicipalidad.model.CATEGORIAS
 import com.duoc.aplicacionmunicipalidad.model.tiposDe
 import com.duoc.aplicacionmunicipalidad.viewmodel.NuevoRequerimientoViewModel
@@ -64,6 +68,25 @@ fun NuevoRequerimientoScreen(
     ) { bitmap ->
         if (bitmap != null) {
             photoBitmap = bitmap
+        }
+    }
+
+    // Recurso nativo: GPS. Primero se pide el permiso y luego se lee la ubicación del teléfono
+    val contexto = LocalContext.current
+    val permisoUbicacionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permisos ->
+        if (permisos.values.any { it }) {
+            Toast.makeText(contexto, "Obteniendo ubicación...", Toast.LENGTH_SHORT).show()
+            obtenerUbicacionActual(
+                contexto = contexto,
+                alObtener = { latitud, longitud -> viewModel.onUbicacionObtenida(latitud, longitud) },
+                alFallar = {
+                    Toast.makeText(contexto, "No se pudo obtener la ubicación. Activa el GPS.", Toast.LENGTH_LONG).show()
+                }
+            )
+        } else {
+            Toast.makeText(contexto, "Sin permiso de ubicación no se puede usar el GPS.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -203,7 +226,14 @@ fun NuevoRequerimientoScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedButton(
-                    onClick = viewModel::onUsarUbicacion,
+                    onClick = {
+                        permisoUbicacionLauncher.launch(
+                            arrayOf(
+                                Manifest.permission.ACCESS_FINE_LOCATION,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            )
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),

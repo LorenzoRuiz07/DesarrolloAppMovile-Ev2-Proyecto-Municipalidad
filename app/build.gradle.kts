@@ -81,6 +81,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.0")
     implementation("androidx.room:room-runtime:2.8.5")
     implementation("androidx.room:room-ktx:2.8.5")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     ksp("androidx.room:room-compiler:2.8.5")
     
     // Coil para cargar imágenes desde URI o Bitmap

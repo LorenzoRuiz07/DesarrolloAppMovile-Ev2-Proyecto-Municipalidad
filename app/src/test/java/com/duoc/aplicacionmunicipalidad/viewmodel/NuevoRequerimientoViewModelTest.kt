@@ -153,10 +153,13 @@ class NuevoRequerimientoViewModelTest {
     }
 
     @Test
-    fun `usar ubicacion rellena el lugar`() {
-        viewModel.onUsarUbicacion()
+    fun `la ubicacion del gps guarda las coordenadas y rellena el lugar`() {
+        viewModel.onUbicacionObtenida(-33.4975, -70.6240)
 
-        assertEquals("Cerca de mi ubicación actual", viewModel.uiState.value.lugar)
+        val estado = viewModel.uiState.value
+        assertEquals(-33.4975, estado.latitud ?: 0.0, 0.00001)
+        assertEquals(-70.6240, estado.longitud ?: 0.0, 0.00001)
+        assertEquals("Ubicación GPS: -33.49750, -70.62400", estado.lugar)
     }
 
     @Test

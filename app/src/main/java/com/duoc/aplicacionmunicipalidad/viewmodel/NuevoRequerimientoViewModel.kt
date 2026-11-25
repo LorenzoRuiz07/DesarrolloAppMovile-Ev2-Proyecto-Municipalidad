@@ -31,6 +31,8 @@ data class NuevoRequerimientoUiState(
     val prioridad: String = "Media",
     val descripcion: String = "",
     val evidencia: Evidencia? = null,
+    val latitud: Double? = null,
+    val longitud: Double? = null,
     val enviando: Boolean = false,
     val error: String? = null,
     val idEnviado: String? = null
@@ -96,8 +98,16 @@ class NuevoRequerimientoViewModel(
         _uiState.update { it.copy(lugar = valor, error = null) }
 
 
-    fun onUsarUbicacion() =
-        _uiState.update { it.copy(lugar = "Cerca de mi ubicación actual", error = null) }
+    // El GPS entregó la ubicación: se guardan las coordenadas y se muestran en el campo "lugar"
+    fun onUbicacionObtenida(latitud: Double, longitud: Double) =
+        _uiState.update {
+            it.copy(
+                latitud = latitud,
+                longitud = longitud,
+                lugar = String.format(Locale.US, "Ubicación GPS: %.5f, %.5f", latitud, longitud),
+                error = null
+            )
+        }
 
     fun onPrioridadChange(valor: String) =
         _uiState.update { it.copy(prioridad = valor) }
@@ -143,7 +153,9 @@ class NuevoRequerimientoViewModel(
                         fechaMillis = s.fechaMillis,
                         rutUsuario = SesionUsuario.perfilUsuarioActual?.rut.orEmpty(),
                         evidenciaNombre = s.evidencia?.nombre.orEmpty(),
-                        evidenciaDetalle = s.evidencia?.detalle.orEmpty()
+                        evidenciaDetalle = s.evidencia?.detalle.orEmpty(),
+                        latitud = s.latitud,
+                        longitud = s.longitud
                     )
                 )
                 _uiState.update { it.copy(enviando = false, idEnviado = creado.id) }
